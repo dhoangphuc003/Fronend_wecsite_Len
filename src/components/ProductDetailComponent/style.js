@@ -1,5 +1,6 @@
 import { Col, Image, InputNumber } from "antd";
 import styled from "styled-components";
+import ButtonComponent from "../ButtonComponent/ButtonComponent";
 
 export const WrapperImageSmall = styled(Image)`
     width: 64px !important;
@@ -64,11 +65,18 @@ export const WrapperQualityProduct = styled.div`
 export const WrapperInputNumber = styled(InputNumber)`
     &.ant-input-number.ant-input-number-sm {
         width: 100px;
-        border-top:none;
-        border-bottom:none;
-    };
-    &.ant-input-number.ant-input-number-sm .ant-input-number-handler-wrap{
-            display:none;
-        }
-    
-`
+        border-top: none;
+        border-bottom: none;
+        text-align: center; /* Căn giữa số theo chiều ngang */
+        display: flex; 
+        align-items: center; /* Căn giữa theo chiều dọc */
+    }
+
+    &.ant-input-number.ant-input-number-sm .ant-input-number-handler-wrap {
+        display: none;
+    }
+
+    .ant-input-number-input {
+        text-align: center; /* Đảm bảo văn bản (số) cũng được căn giữa */
+    }
+`;

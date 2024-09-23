@@ -1,5 +1,5 @@
-import { Button, Form, Space } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import { Button, Form, Select, Space } from "antd";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WrapperHeader } from "./style";
 import {
   DeleteOutlined,
@@ -10,8 +10,8 @@ import {
 } from "@ant-design/icons";
 import TableComponent from "../../components/TableComponent/TableCompoent";
 import InputComponent from "../../components/Inputcomponent/InputComponent";
-import { WrapperUploadFile } from "../ProfilePage/style";
-import { getBase64 } from "../../utils";
+import { WrapperUploadFile } from "../../pages/ProfilePage/style";
+import { getBase64, renderOptions } from "../../utils";
 import { useMutationHook } from "../../hooks/useMutationHook";
 import * as ProductService from "../../service/ProductService";
 import * as message from "../../components/Message/Message";
@@ -27,30 +27,26 @@ const AdminProduct = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState("");
   const [isOpenDrawer, setIsOpenDrawer] = useState();
+  const [typeSelected,setTypeSelected] = useState('')
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
   const user = useSelector((state) => state.user);
   const [isLoadingUpdate, setIsLoadingUpdate] = useState(false);
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
-  const [stateProduct, setStateProduct] = useState({
-    name: "",
-    price: "",
-    description: "",
-    countInStock: "",
-    image: "",
-    rating: "",
-    type: "",
-  });
-  const [stateProductDetails, setStateProductDetails] = useState({
-    name: "",
-    price: "",
-    description: "",
-    countInStock: "",
-    image: "",
-    rating: "",
-    type: "",
-  });
+  const inittial = () => ({
+    name: '',
+    price: '',
+    description: '',
+    rating: '',
+    image: '',
+    type: '',
+    countInStock: '',
+    newType: '',
+    discount: '',
+  })
+  const [stateProduct, setStateProduct] = useState(inittial());
+  const [stateProductDetails, setStateProductDetails] = useState(inittial());
   const renderAction = () => {
     return (
       <div>
@@ -67,8 +63,7 @@ const AdminProduct = () => {
   };
 
   const mutation = useMutationHook((data) => {
-    const { name, image, type, price, countInStock, rating, description } =
-      data;
+    const { name, image, type, price, countInStock, rating, description,discount } = data;
     const res = ProductService.createProduct({
       name,
       image,
@@ -77,6 +72,7 @@ const AdminProduct = () => {
       countInStock,
       rating,
       description,
+      discount
     });
     return res;
   });
@@ -95,11 +91,10 @@ const AdminProduct = () => {
 
   const getAllProducts = async () => {
     const res = await ProductService.getAllProduct();
-    console.log("res", res);
     return res;
   };
   const FetchGetDetailsProduct = async (rowSelected) => {
-    try {
+    try{
       if (!rowSelected) {
         throw new Error("Row selected is invalid");
       }
@@ -113,6 +108,7 @@ const AdminProduct = () => {
           image: res?.data?.image,
           rating: res?.data?.rating,
           type: res?.data?.type,
+          discount: res?.data?.discount
         });
         setIsLoadingUpdate(false);
       }
@@ -122,6 +118,11 @@ const AdminProduct = () => {
       message.error("Không thể lấy chi tiết sản phẩm. Vui lòng thử lại.");
     }
   };
+  const fetchAllTypeProduct = async() =>{
+    const res = await ProductService.getAllTypeProduct()
+    return res
+}
+
 
   const { data, isLoading, isSuccess, isError } = mutation;
   const {
@@ -142,6 +143,10 @@ const AdminProduct = () => {
   const queryProduct = useQuery({
     queryKey: ["products"],
     queryFn: getAllProducts,
+  });
+  const typeProduct = useQuery({
+    queryKey: ["type-product"],
+    queryFn: fetchAllTypeProduct,
   });
   const { isLoading: isLoadingProduct, data: products } = queryProduct;
 
@@ -188,18 +193,22 @@ const AdminProduct = () => {
     }
   }, [isSuccessDeletedMany, dataDeletedMany, isErrorDeletedMany]);
   useEffect(() => {
-    form.setFieldsValue(stateProductDetails);
-  }, [form, stateProductDetails]);
+    if(!isModalOpen){
+      form.setFieldsValue(stateProductDetails);
+    }else{
+      form.setFieldsValue(inittial());
+    }
+  }, [form, stateProductDetails,isModalOpen]);
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+  const handleSearch = useCallback((selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
-  };
-  const handleReset = (clearFilters) => {
+  }, []);
+  const handleReset = useCallback((clearFilters) => {
     clearFilters();
     setSearchText("");
-  };
+  }, []);
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -264,20 +273,7 @@ const AdminProduct = () => {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
-    // render: (text) =>
-    //   searchedColumn === dataIndex ? (
-    //     <Highlighter
-    //       highlightStyle={{
-    //         backgroundColor: '#ffc069',
-    //         padding: 0,
-    //       }}
-    //       searchWords={[searchText]}
-    //       autoEscape
-    //       textToHighlight={text ? text.toString() : ''}
-    //     />
-    //   ) : (
-    //     text
-    //   ),
+    
   });
   const columns = [
     {
@@ -385,7 +381,17 @@ const AdminProduct = () => {
       return { ...product, key: product._id };
     });
   const onFinish = () => {
-    mutation.mutate(stateProduct, {
+    const param= {
+      name: stateProduct.name,
+      price: stateProduct.price,
+      description: stateProduct.description,
+      countInStock:stateProduct.countInStock,
+      image: stateProduct.image,
+      rating: stateProduct.rating,
+      type: stateProduct.type === 'add_type'?stateProduct.newType :stateProduct.type,
+      discount: stateProduct.discount,
+    }
+    mutation.mutate(param, {
       onSettled: () => {
         queryProduct.refetch();
       },
@@ -393,55 +399,58 @@ const AdminProduct = () => {
     handleCancel()
     console.log("Success:", stateProduct);
   };
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsModalOpen(false);
     setStateProduct({
-      name: "",
-      price: "",
-      description: "",
-      countInStock: "",
-      image: "",
-      rating: "",
-      type: "",
+      name: '',
+      price: '',
+      description: '',
+      countInStock: '',
+      image: '',
+      rating: '',
+      type: '',
+      discount:''
     });
     form.resetFields();
-  };
-  const handleCloseDrawer = () => {
+  }, [form]);
+  const handleCloseDrawer = useCallback(() => {
     setIsOpenDrawer(false);
     setStateProductDetails({
-      name: "",
-      price: "",
-      description: "",
-      countInStock: "",
-      image: "",
-      rating: "",
-      type: "",
+      name: '',
+      price: '',
+      description: '',
+      countInStock: '',
+      image: '',
+      rating: '',
+      type: '',
+      discount:''
     });
     setStateProduct({
-      name: "",
-      price: "",
-      description: "",
-      countInStock: "",
-      image: "",
-      rating: "",
-      type: "",
+      name: '',
+      price: '',
+      description: '',
+      countInStock: '',
+      image: '',
+      rating: '',
+      type: '',
+      discount:''
     });
     form.resetFields();
-  };
-  const handleOnchange = (e) => {
+  }, [form]);
+  const handleOnchange = useCallback((e) => {
     setStateProduct({
       ...stateProduct,
       [e.target.name]: e.target.value,
     });
     console.log("e.target.value", e.target.name, e.target.value);
-  };
-  const handleOnchangeDetails = (e) => {
+  }, [stateProduct]);
+  const handleOnchangeDetails = useCallback((e) => {
     setStateProductDetails({
       ...stateProductDetails,
       [e.target.name]: e.target.value,
     });
     console.log("e.target.value", e.target.name, e.target.value);
-  };
+  }, [stateProductDetails]);
   const handleOnchangeAvatar = async ({ fileList }) => {
     const file = fileList[0];
     if (!file.url && !file.preview) {
@@ -501,6 +510,13 @@ const AdminProduct = () => {
     );
     handleCloseDrawer()
   };
+
+  const handleChangeSelected=(value)=>{
+    setStateProduct({
+      ...stateProduct,
+      type:value
+    })
+}
   return (
     <div>
       <WrapperHeader>Quản Lý Sản Phẩm</WrapperHeader>
@@ -524,6 +540,7 @@ const AdminProduct = () => {
           handleDeleteMany={handleDeleteManyProducts}
           columns={columns}
           isLoading={isLoadingProduct}
+          pagination={{ pageSize: 6 }}
           data={dataTable}
           onRow={(record, rowIndex) => {
             return {
@@ -540,6 +557,7 @@ const AdminProduct = () => {
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
+        maskClosable={false}
       >
         {/* <Loading isLoading={isLoading}> */}
         <Form
@@ -568,12 +586,22 @@ const AdminProduct = () => {
             name="type"
             rules={[{ required: true, message: "Nhập loại sản phẩm!" }]}
           >
-            <InputComponent
-              value={stateProduct.type}
-              onChange={handleOnchange}
-              name="type"
+            <Select
+              name='type'
+              value={typeSelected}
+              onChange={handleChangeSelected}
+              options={renderOptions(typeProduct?.data?.data)}
             />
           </Form.Item>
+          {stateProduct.type === 'add_type' && (
+          <Form.Item
+            label="Loại mới"
+            name="newType"
+            rules={[{ required: true, message: "Nhập loại sản phẩm!" }]}
+          >
+            <InputComponent value={stateProduct.newType} onChange={handleOnchange} name="newType" />
+          </Form.Item>
+          )}
 
           <Form.Item
             label="Tồn kho"
@@ -598,7 +626,17 @@ const AdminProduct = () => {
               name="price"
             />
           </Form.Item>
-
+          <Form.Item
+            label="Discount"
+            name="discount"
+            rules={[{ required: true, message: "Nhập giảm giá!" }]}
+          >
+            <InputComponent
+              value={stateProduct.discount}
+              onChange={handleOnchange}
+              name="discount"
+            />
+          </Form.Item>
           <Form.Item
             label="Đánh giá"
             name="rating"
@@ -666,8 +704,9 @@ const AdminProduct = () => {
       <DrawerComponent
         title="chi tiết sản phẩm"
         open={isOpenDrawer}
-        onClose={() => setIsOpenDrawer(false)}
+        onClose={handleCloseDrawer}
         width={"50%"}
+        maskClosable={false}
       >
         <Loading isLoading={isLoadingUpdate}>
           <Form
@@ -724,6 +763,17 @@ const AdminProduct = () => {
                 value={stateProductDetails.price}
                 onChange={handleOnchangeDetails}
                 name="price"
+              />
+            </Form.Item>
+            <Form.Item
+              label="Discount"
+              name="discount"
+              rules={[{ required: true,message: "Nhập giảm giá!" }]}
+            >
+              <InputComponent
+                value={stateProductDetails.discount}
+                onChange={handleOnchangeDetails}
+                name="discount"
               />
             </Form.Item>
 

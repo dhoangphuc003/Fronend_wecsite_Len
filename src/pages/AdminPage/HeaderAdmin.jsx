@@ -17,6 +17,7 @@ const HeaderAdmin = () =>{
     const dispatch = useDispatch()
     const [userName, setUserName] = useState()
     const [userAvatar, setUserAvatar] = useState()
+    const [isOpenPopup, setIsOpenPopup] = useState(false)
     const [loading, setLoading] = useState(false)
     const handleNavigateSignin =() => {
         navigate('/sign-in')
@@ -37,16 +38,32 @@ const HeaderAdmin = () =>{
   
     const content = (
         <div>
-            {user?.isAdmin &&(
-                <WrapperContentPopup onClick={()=> navigate('/system/admin')}>Quản lý cửa hàng</WrapperContentPopup>
-            )}
-            <WrapperContentPopup onClick={()=> navigate('/profile-user')}>Thông tin người dùng</WrapperContentPopup>
-            <WrapperContentPopup onClick={handleLogout}>Đăng xuất</WrapperContentPopup>
-           
-        </div>
+        <WrapperContentPopup onClick={() => handleClickNavigate('home')}>Trang chủ</WrapperContentPopup>
+        {user?.isAdmin && (
+          <WrapperContentPopup onClick={() => handleClickNavigate('admin')}>Quản lí hệ thống</WrapperContentPopup>
+        )}
+        <WrapperContentPopup onClick={() => handleClickNavigate()}>Đăng xuất</WrapperContentPopup>
+      </div>
     )
+
+    const handleClickNavigate = (type) => {
+        if(type === 'home') {
+          navigate('/')
+        }else if(type === 'admin') {
+          navigate('/system/admin')
+        }else if(type === 'my-order') {
+          navigate('/my-order',{ state : {
+              id: user?.id,
+              token : user?.access_token
+            }
+          })
+        }else {
+          handleLogout()
+        }
+        setIsOpenPopup(false)
+      }
     return (
-        <div style={{ background:'rgb(26,148,255)', display:'flex', justifyContent:'center'}}>
+        <div style={{ background:'rgb(26,148,255)', height:'50px',display:'flex', justifyContent:'center', position: 'fixed',top: 0, width: '100%', zIndex: 1000,}}>
             <WrapperHeader >
                 <Col span={12}>
                     <WrapperTextHeader onClick={()=> navigate('/')}>YARN SHOP</WrapperTextHeader>
@@ -67,10 +84,10 @@ const HeaderAdmin = () =>{
                                 <UserOutlined style={{fontSize:'30px'}}/>
                             )}
                             {user?.access_token ? (
-                                <>
-                                <Popover content={content} trigger="click">
-                                    <div style={{cursor:'pointer'}}>{userName?.length ? userName : user?.email}</div>
-                                </Popover>
+                                  <>
+                                  <Popover content={content} trigger="click" open={isOpenPopup}>
+                                    <div style={{ cursor: 'pointer',maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }} onClick={() => setIsOpenPopup((prev) => !prev)}>{userName?.length ? userName : user?.email}</div>
+                                  </Popover>
                                 </>
                             ):(
                                 <div onClick={handleNavigateSignin}>

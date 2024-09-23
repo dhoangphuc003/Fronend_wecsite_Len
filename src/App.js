@@ -69,9 +69,9 @@ function App() {
               const Layout = routes.isShowHeader? DefaultComponent: Fragment
               return(
                 <Route key={routes.path} path={isCheckAuth && routes.path} element={
-                  <Layout >
+                  <Layout showFooter={routes.isShowFooter !== false}>
                       <Page />
-                  </Layout>
+                    </Layout>
                 }/>
               )
             })}

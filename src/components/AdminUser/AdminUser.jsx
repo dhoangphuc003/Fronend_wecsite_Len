@@ -22,7 +22,6 @@ import { useQuery } from "@tanstack/react-query";
 const AdminUser = () => {
   const [form] = Form.useForm();
   const tableRef = useRef(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState("");
   const [isOpenDrawer, setIsOpenDrawer] = useState();
   const [searchText, setSearchText] = useState("");
@@ -37,7 +36,8 @@ const AdminUser = () => {
     isAdmin: false,
     phone: "",
     avatar: "",
-    address:"",
+    address: "",
+    city: "",
   });
   const renderAction = () => {
     return (
@@ -70,7 +70,6 @@ const AdminUser = () => {
   const getAllUsers = async () => {
     const token = user?.access_token;
     const res = await UserService.getAllUser(token);
-    console.log("resData", res);
     return res;
   };
   const FetchGetDetailsUser = async (rowSelected) => {
@@ -87,11 +86,11 @@ const AdminUser = () => {
           isAdmin: res?.data?.isAdmin,
           phone: res?.data?.phone,
           avatar: res?.data?.avatar,
-          address: res?.data?.address
+          address: res?.data?.address,
+          city: res?.data?.city
         });
         setIsLoadingUpdate(false);
       }
-      console.log("res", res);
     } catch (error) {
       console.error("Error fetching user details:", error.message);
       message.error("Không thể lấy chi tiết sản phẩm. Vui lòng thử lại.");
@@ -237,6 +236,11 @@ const AdminUser = () => {
       sorter: (a, b) => a.address.length - b.address.length,
     },
     {
+      title: "Thành phố",
+      dataIndex: "city",
+      sorter: (a, b) => a.city.length - b.city.length,
+    },
+    {
       title: "Quyền",
       dataIndex: "isAdmin",
       filters: [
@@ -286,6 +290,8 @@ const AdminUser = () => {
       isAdmin: false,
       phone: "",
       avatar: "",
+      city:"",
+      address:""
     });
     form.resetFields();
   };
@@ -414,7 +420,7 @@ const AdminUser = () => {
             <Form.Item
               label="Địa chỉ"
               name="address"
-              rules={[{ required: true, message: "Nhập email!" }]}
+              rules={[{ required: true, message: "Nhập địa chỉ!" }]}
             >
               <InputComponent
                 value={stateUserDetails.address}
@@ -422,7 +428,17 @@ const AdminUser = () => {
                 name="address"
               />
             </Form.Item>
-
+            <Form.Item
+              label="Thành phố"
+              name="city"
+              rules={[{ required: true, message: "Nhập thành phố!" }]}
+            >
+              <InputComponent
+                value={stateUserDetails.city}
+                onChange={handleOnchangeDetails}
+                name="city"
+              />
+            </Form.Item>
             <Form.Item
               label="Quyền"
               name="isAdmin"

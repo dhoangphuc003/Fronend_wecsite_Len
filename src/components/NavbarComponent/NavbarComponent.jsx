@@ -9,16 +9,6 @@ const NavbarComponent = () => {
                 return options.map((option) => {
                     return <WrapperTextValue>{option}</WrapperTextValue>
                 })
-            // case 'checkbox':
-            //     return (
-            //         <Checkbox.Group style={{width:'100%', display: 'flex', flexDirection:'column',gap:'12px'}} >
-            //             {options.map((option)=>{
-            //                 return(
-            //                     <Checkbox value={option.value}>{option.label}</Checkbox>
-            //                 )
-            //             })}
-            //         </Checkbox.Group>
-            //     )
             case 'star':
                 return options.map((option)=>{
                     return(
@@ -46,15 +36,6 @@ const NavbarComponent = () => {
             <WrapperContent>
                 {renderContent('text', ['Len','Dụng cụ đan/móc','Nguyên phụ liệu', 'Sản phẩm'])}
             </WrapperContent>
-            {/* <WrapperLableText>Check box</WrapperLableText>
-            <WrapperContent>
-                {renderContent('checkbox', [
-                                            {value: 'a', label: 'A' },
-                                            {value: 'b', label: 'B' }
-                                            ]
-                                )
-                }
-            </WrapperContent> */}
             <WrapperLableText>Đánh giá</WrapperLableText>
             <WrapperContent>
                 {renderContent('star',[5,4,3])}

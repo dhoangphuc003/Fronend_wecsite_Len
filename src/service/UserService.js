@@ -17,6 +17,14 @@ export const refreshToken = async () => {
     });
     return res.data;
 };
+// export const refreshToken = async (refreshToken) => {
+//     const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/refresh-token`, {} , {
+//         headers: {
+//             token: `Bearer ${refreshToken}`,
+//         }
+//     })
+//     return res.data
+// }
 export const logoutToken = async () => {
     const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/log-out`)
     return res.data

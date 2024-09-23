@@ -11,6 +11,7 @@ import { updateUser } from "../../redux/slides/userSlide";
 import { Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { getBase64 } from "../../utils";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () =>{
     const user = useSelector((state) => state.user);
@@ -19,7 +20,9 @@ const ProfilePage = () =>{
     const [ address, setAddress]= useState(user?.address)
     const [ phone, setPhone]= useState(user?.phone)
     const [ avatar, setAvatar]= useState(user?.avatar)
+    const [ city, setCity]= useState(user?.city)
     const dispatch = useDispatch()
+    const navigate= useNavigate()
     const handleOnchangeEmail =(value)=>{
         setEmail(value)
     }
@@ -28,6 +31,9 @@ const ProfilePage = () =>{
     }
     const handleOnchangeAddress =(value)=>{
         setAddress(value)
+    }
+    const handleOnchangeCity =(value)=>{
+        setCity(value)
     }
     const handleOnchangePhone =(value)=>{
         setPhone(value)
@@ -50,7 +56,8 @@ const ProfilePage = () =>{
             access_token: user?.access_token,
             name, 
             email, 
-            address, 
+            address,
+            city, 
             phone, 
             avatar, 
         })
@@ -68,12 +75,6 @@ const ProfilePage = () =>{
     })
     
     const handleGetDetailsUser = useCallback(async (id, token) => {
-        // try {
-        //     const res = await UserService.getDetailsUser(id, token);
-        //     dispatch(updateUser({ ...res?.data, access_token: token }));
-        // } catch (error) {
-        //     console.error('Error fetching user details:', error);
-        // }
         try {
             if (!token) {
                 console.error("No access token found, please login again.");
@@ -97,12 +98,13 @@ const ProfilePage = () =>{
         setPhone(user?.phone)
         setAddress (user?.address)
         setAvatar(user?.avatar)
+        setCity(user?.city)
     },[user])
 
 
     return (
         <div style={{width:'1270px', margin:'0 auto', height:'500px'}}>
-            <WrapperHeader >Thông tin người dùng</WrapperHeader>
+            <h3 style={{marginTop: '10px'}}><span style={{cursor:'pointer'}}  onClick={()=> navigate('/')}>Trang chủ</span> / Thông tin của tôi</h3>
             <LoadingComponent isLoading={isPending}>
                 <WrapperContentProfile>
                     <WrapperInput>
@@ -125,7 +127,7 @@ const ProfilePage = () =>{
                                 borderRadius: '4px',
                                 padding:'6px'
                             }}
-                            textButton={"Cập nhật"}
+                            textButt={"Cập nhật"}
                             styleTextButton={{ color: '#fff' }}/>
                     </WrapperInput>
 
@@ -149,7 +151,7 @@ const ProfilePage = () =>{
                                 borderRadius: '4px',
                                 padding:'6px'
                             }}
-                            textButton={"Cập nhật"}
+                            textButt={"Cập nhật"}
                             styleTextButton={{ color: '#fff' }}/>
                     </WrapperInput>
 
@@ -173,17 +175,17 @@ const ProfilePage = () =>{
                                 borderRadius: '4px',
                                 padding:'6px'
                             }}
-                            textButton={"Cập nhật"}
+                            textButt={"Cập nhật"}
                             styleTextButton={{ color: '#fff' }}/>
                     </WrapperInput>
 
                     <WrapperInput>
-                        <WrapperLabel htmlFor="phone">Điện thoại</WrapperLabel>
+                        <WrapperLabel>Thành phố</WrapperLabel>
                         <InputFormComponent 
                             style={{width:'300px', height:'30px'}} 
-                            id="phone" 
-                            value={phone} 
-                            onChange={handleOnchangePhone} 
+                            id="city" 
+                            value={city} 
+                            onChange={handleOnchangeCity} 
                         />
                         <ButtonComponent  
                             onClick={handleUpdate}
@@ -197,8 +199,32 @@ const ProfilePage = () =>{
                                 borderRadius: '4px',
                                 padding:'6px'
                             }}
-                            textButton={"Cập nhật"}
+                            textButt={"Cập nhật"}
                             styleTextButton={{ color: '#fff' }}/>
+                    </WrapperInput>
+
+                    <WrapperInput>
+                        <WrapperLabel htmlFor="phone">Điện thoại</WrapperLabel>
+                        <InputFormComponent 
+                            style={{width:'300px', height:'30px'}} 
+                            id="phone" 
+                            value={phone} 
+                            onChange={handleOnchangePhone} 
+                        />
+                        <ButtonComponent  
+                                        onClick={handleUpdate}
+                                        bordered={'false'}
+                                        size={40}
+                                        style={{
+                                            background: '#17a2b8',
+                                            height: '30px',
+                                            width: 'fit-content',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            padding:'6px'
+                                        }}
+                                        textButt={"Cập nhật"}
+                                        styleTextButton={{ color: '#fff' }}/>
                     </WrapperInput>
 
                     <WrapperInput>
@@ -235,7 +261,7 @@ const ProfilePage = () =>{
                                 borderRadius: '4px',
                                 padding:'6px'
                             }}
-                            textButton={"Cập nhật"}
+                            textButt={"Cập nhật"}
                             styleTextButton={{ color: '#fff' }}/>
                     </WrapperInput>
 
